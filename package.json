@@ -1,0 +1,13 @@
+{
+  "name": "string-deduplicator-cli",
+  "version": "1.0.0",
+  "description": "CLI tool for removing consecutive duplicate letters from strings",
+  "main": "src/index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/index.js"
+  },
+  "dependencies": {
+    "commander": "^11.1.0"
+  }
+}
