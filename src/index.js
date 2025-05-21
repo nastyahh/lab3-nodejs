@@ -2,22 +2,24 @@ import { Command } from 'commander';
 import { createReadStream, createWriteStream } from 'fs';
 import { pipeline } from 'stream/promises';
 import { DeduplicationTransform } from './deduplicator.js';
+import { SortingTransform } from './sorter.js';
 
 const program = new Command();
 
 program
-    .name('string-deduplicator')
-    .description('CLI tool for removing consecutive duplicate letters from strings')
+    .name('array-processor')
+    .description('CLI tool for array processing tasks')
     .version('1.0.0')
-    .requiredOption('-t, --task <task>', 'Task to perform (currently only "deduplicate" is supported)')
+    .requiredOption('-t, --task <task>', 'Task to perform (supported tasks: "deduplicate", "sort-odd")')
     .option('-i, --input <file>', 'Input file (if not specified, reads from stdin)')
     .option('-o, --output <file>', 'Output file (if not specified, writes to stdout)')
     .parse(process.argv);
 
 const options = program.opts();
 
-if (options.task !== 'deduplicate') {
-    console.error('Error: Only "deduplicate" task is currently supported');
+
+if (!['deduplicate', 'sort-odd'].includes(options.task)) {
+    console.error('Error: Supported tasks are "deduplicate" and "sort-odd"');
     process.exit(1);
 }
 
@@ -31,12 +33,15 @@ async function processStreams() {
             ? createWriteStream(options.output)
             : process.stdout;
 
-        const transformStream = new DeduplicationTransform();
+        const transformStream = options.task === 'deduplicate'
+            ? new DeduplicationTransform()
+            : new SortingTransform();
 
         inputStream.on('error', (error) => {
             console.error(`Error reading input: ${error.message}`);
             process.exit(1);
         });
+
 
         outputStream.on('error', (error) => {
             console.error(`Error writing output: ${error.message}`);
@@ -50,7 +55,7 @@ async function processStreams() {
         );
 
         if (!options.input) {
-            console.log('\nEnter more strings (Ctrl+C to exit):');
+            console.log('\nEnter more data (Ctrl+C to exit):');
         } else {
             process.exit(0);
         }
